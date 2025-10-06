@@ -1,0 +1,96 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="bi bi-search"></i> Business Information Scraper</h4>
+            </div>
+            <div class="card-body">
+                <!-- Manual Keyword Input -->
+                <form method="POST" action="{{ url_for('main.upload_file') }}" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <input type="text" name="keyword" class="form-control" placeholder="Enter keyword (e.g., 'restaurants in london')" required>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-plus-circle"></i> Add Keyword
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- File Upload -->
+                <form method="POST" action="{{ url_for('main.upload_file') }}" enctype="multipart/form-data" class="mb-4">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                            <small class="text-muted">Upload Excel/CSV file (first column will be read)</small>
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="bi bi-upload"></i> Upload File
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Recent Keywords -->
+                <div class="mt-4">
+                    <h5><i class="bi bi-list-ul"></i> Recent Keywords</h5>
+                    {% if keywords %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Keyword</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for keyword in keywords %}
+                                <tr>
+                                    <td>{{ keyword.id }}</td>
+                                    <td>{{ keyword.keyword }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ keyword.status }}">
+                                            {{ keyword.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ keyword.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                    <td>
+                                        {% if keyword.status == 'pending' %}
+                                        <form method="POST" action="{{ url_for('main.scrape_keyword', keyword_id=keyword.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="bi bi-play-fill"></i> Scrape
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                        <a href="{{ url_for('keywords.keyword_results', keyword_id=keyword.id) }}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye-fill"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('keywords.keywords') }}" class="btn btn-outline-primary">View All Keywords</a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No keywords found. Add some to get started.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
